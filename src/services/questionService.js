@@ -1,69 +1,97 @@
+import { getCollection, saveCollection, STORAGE_KEYS } from "./apiClient";
+import { setDataSourceMode } from "./dataSource";
+
 const API_URL = "/api/questions";
+
+const apiFetch = async (url, options = {}) => {
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    throw new Error(`Request failed (${response.status})`);
+  }
+  if (response.status === 204) {
+    return null;
+  }
+  return response.json();
+};
 
 export const questionService = {
   getAllQuestions: async () => {
-    const response = await fetch(API_URL);
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch questions");
+    try {
+      const data = await apiFetch(API_URL);
+      setDataSourceMode("api");
+      return data;
+    } catch {
+      setDataSourceMode("local");
+      return getCollection(STORAGE_KEYS.QUESTIONS);
     }
-
-    return await response.json();
   },
 
   getQuestionsByIds: async (ids) => {
-    const response = await fetch(
-      `${API_URL}?ids=${ids.join(",")}`
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch questions");
+    if (!ids?.length) return [];
+    try {
+      const data = await apiFetch(`${API_URL}?ids=${ids.join(",")}`);
+      setDataSourceMode("api");
+      return data;
+    } catch {
+      setDataSourceMode("local");
+      const all = getCollection(STORAGE_KEYS.QUESTIONS);
+      return all.filter((q) => ids.includes(q.id));
     }
-
-    return await response.json();
   },
 
   createQuestion: async (questionData) => {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(questionData),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to create question");
+    try {
+      const data = await apiFetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(questionData),
+      });
+      setDataSourceMode("api");
+      return data;
+    } catch {
+      const questions = getCollection(STORAGE_KEYS.QUESTIONS);
+      const id = questionData.id || `q-${Date.now()}`;
+      const newQuestion = { ...questionData, id };
+      questions.push(newQuestion);
+      saveCollection(STORAGE_KEYS.QUESTIONS, questions);
+      setDataSourceMode("local");
+      return newQuestion;
     }
-
-    return await response.json();
   },
 
   updateQuestion: async (id, updatedFields) => {
-    const response = await fetch(`${API_URL}/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updatedFields),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to update question");
+    try {
+      const data = await apiFetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedFields),
+      });
+      setDataSourceMode("api");
+      return data;
+    } catch {
+      const questions = getCollection(STORAGE_KEYS.QUESTIONS);
+      const index = questions.findIndex((q) => q.id === id);
+      if (index === -1) throw new Error("Question not found");
+      questions[index] = { ...questions[index], ...updatedFields };
+      saveCollection(STORAGE_KEYS.QUESTIONS, questions);
+      setDataSourceMode("local");
+      return questions[index];
     }
-
-    return await response.json();
   },
 
   deleteQuestion: async (id) => {
-    const response = await fetch(`${API_URL}/${id}`, {
-      method: "DELETE",
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to delete question");
+    try {
+      await apiFetch(`${API_URL}/${id}`, { method: "DELETE" });
+      setDataSourceMode("api");
+      return true;
+    } catch {
+      const questions = getCollection(STORAGE_KEYS.QUESTIONS).filter((q) => q.id !== id);
+      if (questions.length === getCollection(STORAGE_KEYS.QUESTIONS).length) {
+        throw new Error("Question not found");
+      }
+      saveCollection(STORAGE_KEYS.QUESTIONS, questions);
+      setDataSourceMode("local");
+      return true;
     }
-
-    return true;
   },
 };

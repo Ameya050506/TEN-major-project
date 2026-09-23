@@ -7,6 +7,7 @@ import { Badge } from "../../components/common/Badge";
 import { Button } from "../../components/common/Button";
 import { Modal } from "../../components/common/Modal";
 import { LoadingState } from "../../components/common/LoadingState";
+import { isActiveTest } from "../../utils/activeTests";
 import {
   Clock,
   HelpCircle,
@@ -31,6 +32,10 @@ export const TestInstructions = () => {
     const loadDetails = async () => {
       try {
         const foundTest = await testService.getTestById(id);
+        if (!isActiveTest(foundTest)) {
+          setTest(null);
+          return;
+        }
         setTest(foundTest);
         const testQuestions = await questionService.getQuestionsByIds(foundTest.questionIds);
         setQuestions(testQuestions);
@@ -44,7 +49,18 @@ export const TestInstructions = () => {
   }, [id]);
 
   if (loading) return <LoadingState message="Loading assessment parameters..." />;
-  if (!test) return <div className="p-8 text-center">Assessment not found.</div>;
+  if (!test) {
+    return (
+      <div className="p-8 text-center space-y-3">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          This assessment is not available. It may be inactive or removed.
+        </p>
+        <Link to="/candidate/tests">
+          <Button variant="secondary">Back to assessments</Button>
+        </Link>
+      </div>
+    );
+  }
 
   const handleStart = () => {
     startAssessment(test, questions);

@@ -1,0 +1,7 @@
+# Copy to application-local.properties (gitignored). Set your MySQL root password.
+# PowerShell:
+#   mvn spring-boot:run "-Dspring-boot.run.profiles=local"
+
+spring.datasource.url=jdbc:mysql://localhost:3306/assessment_platform?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+spring.datasource.username=root
+spring.datasource.password=YOUR_MYSQL_ROOT_PASSWORD

@@ -13,4 +13,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local Spring Boot secrets (MySQL password)
+backend/src/main/resources/application-local.properties
+backend/.mvn/maven.config
 '@

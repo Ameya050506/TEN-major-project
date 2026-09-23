@@ -18,6 +18,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { formatDate } from "../../utils/formatters";
+import { filterActiveTests } from "../../utils/activeTests";
 
 export const CandidateDashboard = () => {
   const { user } = useAuth();
@@ -32,7 +33,7 @@ export const CandidateDashboard = () => {
           testService.getAllTests(),
           resultService.getResultsByCandidateId(user?.id || "cand-001"),
         ]);
-        setTests(allTests);
+        setTests(filterActiveTests(allTests));
         setResults(userResults);
       } catch (err) {
         console.error("Dashboard fetch error:", err);

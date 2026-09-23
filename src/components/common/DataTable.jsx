@@ -1,6 +1,11 @@
 import React from "react";
 
-export const DataTable = ({ columns, data, emptyMessage = "No records found" }) => {
+export const DataTable = ({
+  columns,
+  data,
+  emptyMessage = "No records found",
+  onRowClick,
+}) => {
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
       <table className="w-full text-left border-collapse text-sm">
@@ -18,7 +23,10 @@ export const DataTable = ({ columns, data, emptyMessage = "No records found" }) 
             data.map((row, rIdx) => (
               <tr
                 key={row.id || rIdx}
-                className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors"
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+                className={`hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors ${
+                  onRowClick ? "cursor-pointer" : ""
+                }`}
               >
                 {columns.map((col, cIdx) => (
                   <td

@@ -8,7 +8,9 @@ import { Select } from "../../components/common/Select";
 import { Button } from "../../components/common/Button";
 import { Badge } from "../../components/common/Badge";
 import { LoadingState } from "../../components/common/LoadingState";
-import { Plus, Check, ArrowLeft, Layers, Clock, Award } from "lucide-react";
+import { validateTestForm } from "../../utils/testValidation";
+import { EmptyState } from "../../components/common/EmptyState";
+import { Plus, Check, ArrowLeft, Layers, Clock, Award, FileCode } from "lucide-react";
 
 export const CreateTest = () => {
   const navigate = useNavigate();
@@ -70,12 +72,15 @@ export const CreateTest = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title.trim()) {
-      showToast("Assessment title is required", "error");
-      return;
-    }
-    if (formData.selectedQuestionIds.length === 0) {
-      showToast("Please assign at least one question to the assessment", "error");
+    const errors = validateTestForm({
+      title: formData.title,
+      durationMinutes: formData.durationMinutes,
+      passingScore: formData.passingScore,
+      totalMarks: computedTotalMarks,
+      selectedQuestionIds: formData.selectedQuestionIds,
+    });
+    if (errors.length) {
+      showToast(errors[0], "error");
       return;
     }
 
@@ -239,6 +244,15 @@ export const CreateTest = () => {
               <Badge variant="indigo">{availableQuestions.length} in Bank</Badge>
             </div>
 
+            {availableQuestions.length === 0 ? (
+              <EmptyState
+                icon={FileCode}
+                title="Question bank is empty"
+                description="Create questions in the bank before publishing an assessment."
+                actionLabel="Open Question Bank"
+                onAction={() => navigate("/admin/questions")}
+              />
+            ) : (
             <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 pr-1">
               {availableQuestions.map((q) => {
                 const isSelected = formData.selectedQuestionIds.includes(q.id);
@@ -278,6 +292,7 @@ export const CreateTest = () => {
                 );
               })}
             </div>
+            )}
           </div>
         </div>
 

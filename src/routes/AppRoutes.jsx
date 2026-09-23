@@ -32,6 +32,7 @@ import { AdminDashboard } from "../pages/admin/AdminDashboard";
 import { TestManagement } from "../pages/admin/TestManagement";
 import { CreateTest } from "../pages/admin/CreateTest";
 import { EditTest } from "../pages/admin/EditTest";
+import { AdminTestPreview } from "../pages/admin/AdminTestPreview";
 import { QuestionBank } from "../pages/admin/QuestionBank";
 import { CreateQuestion } from "../pages/admin/CreateQuestion";
 import { CandidateManagement } from "../pages/admin/CandidateManagement";
@@ -88,6 +89,7 @@ export const AppRoutes = () => {
         <Route path="tests" element={<TestManagement />} />
         <Route path="tests/create" element={<CreateTest />} />
         <Route path="tests/:id/edit" element={<EditTest />} />
+        <Route path="tests/:id/preview" element={<AdminTestPreview />} />
         <Route path="questions" element={<QuestionBank />} />
         <Route path="questions/create" element={<CreateQuestion />} />
         <Route path="candidates" element={<CandidateManagement />} />

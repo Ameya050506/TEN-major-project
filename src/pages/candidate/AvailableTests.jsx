@@ -5,6 +5,7 @@ import { Input } from "../../components/common/Input";
 import { Select } from "../../components/common/Select";
 import { LoadingState } from "../../components/common/LoadingState";
 import { EmptyState } from "../../components/common/EmptyState";
+import { filterActiveTests } from "../../utils/activeTests";
 import { Search, FileQuestion } from "lucide-react";
 
 export const AvailableTests = () => {
@@ -19,7 +20,7 @@ export const AvailableTests = () => {
     const loadTests = async () => {
       try {
         const data = await testService.getAllTests();
-        setTests(data);
+        setTests(filterActiveTests(data));
       } catch (err) {
         console.error("Failed to load assessments:", err);
       } finally {

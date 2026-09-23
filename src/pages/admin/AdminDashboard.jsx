@@ -57,6 +57,17 @@ export const AdminDashboard = () => {
         setRecentResults(results.slice(0, 4));
       } catch (err) {
         console.error("Admin overview fetch failed:", err);
+        setStats({
+          totalTests: 0,
+          activeTests: 0,
+          totalCandidates: 0,
+          totalQuestions: 0,
+          testsCompleted: 0,
+          passRate: 0,
+          avgScore: 0,
+        });
+        setRecentTests([]);
+        setRecentResults([]);
       } finally {
         setLoading(false);
       }
