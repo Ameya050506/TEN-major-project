@@ -1,9 +1,8 @@
-import { getCollection, STORAGE_KEYS } from "./apiClient";
+import { resultService } from "./resultService";
 
 export const leaderboardService = {
   getLeaderboard: async ({ testId, category } = {}) => {
-    await new Promise((r) => setTimeout(r, 150));
-    let results = getCollection(STORAGE_KEYS.RESULTS);
+    let results = await resultService.getAllResults();
 
     if (testId && testId !== "ALL") {
       results = results.filter((r) => r.testId === testId);
@@ -12,12 +11,11 @@ export const leaderboardService = {
       results = results.filter((r) => r.category === category);
     }
 
-    // Sort by percentage descending, then by time taken ascending
     results.sort((a, b) => {
       if (b.percentage !== a.percentage) {
         return b.percentage - a.percentage;
       }
-      return a.timeTakenSeconds - b.timeTakenSeconds;
+      return (a.timeTakenSeconds || 0) - (b.timeTakenSeconds || 0);
     });
 
     return results.map((item, index) => ({

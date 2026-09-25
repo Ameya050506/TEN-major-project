@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { resultService } from "../../services/resultService";
 import { DataTable } from "../../components/common/DataTable";
 import { Badge } from "../../components/common/Badge";
@@ -11,23 +11,38 @@ import { formatDate, formatDuration } from "../../utils/formatters";
 import { Trophy, Search, Eye } from "lucide-react";
 
 export const ResultsManagement = () => {
+  const location = useLocation();
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
+  const loadResults = async (silent = false) => {
+    if (!silent) setLoading(true);
+    try {
+      const data = await resultService.getAllResults();
+      setResults(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadResults = async () => {
-      try {
-        const data = await resultService.getAllResults();
-        setResults(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadResults();
+  }, [location.pathname, location.key]);
+
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible") loadResults(true);
+    };
+    window.addEventListener("focus", onVisible);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("focus", onVisible);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   const filteredResults = useMemo(() => {

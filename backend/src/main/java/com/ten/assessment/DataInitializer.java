@@ -44,13 +44,13 @@ public class DataInitializer implements CommandLineRunner {
                 "    }\n" +
                 "}",
                 "Java", "Easy", 4, 1, "MCQ",
-                "opt-2",
+                "q-101-opt-2",
                 "s1 is stored in the String Constant Pool, whereas s2 creates a new object in the Heap.",
                 List.of(
-                        option("opt-1", "true true"),
-                        option("opt-2", "false true"),
-                        option("opt-3", "false false"),
-                        option("opt-4", "Compilation Error")
+                        option("q-101", "1", "true true"),
+                        option("q-101", "2", "false true"),
+                        option("q-101", "3", "false false"),
+                        option("q-101", "4", "Compilation Error")
                 )
         );
 
@@ -62,13 +62,13 @@ public class DataInitializer implements CommandLineRunner {
                 "GROUP BY department_id\n" +
                 "____ avg_sal > 75000;",
                 "SQL", "Easy", 4, 1, "MCQ",
-                "opt-2",
+                "q-102-opt-2",
                 "The HAVING clause is used to filter grouped records after aggregate calculations.",
                 List.of(
-                        option("opt-1", "WHERE"),
-                        option("opt-2", "HAVING"),
-                        option("opt-3", "ORDER BY"),
-                        option("opt-4", "FILTER")
+                        option("q-102", "1", "WHERE"),
+                        option("q-102", "2", "HAVING"),
+                        option("q-102", "3", "ORDER BY"),
+                        option("q-102", "4", "FILTER")
                 )
         );
 
@@ -77,13 +77,13 @@ public class DataInitializer implements CommandLineRunner {
                 "Which SOLID principle asserts that high-level modules should not depend on low-level modules, but both should depend on abstractions?",
                 null,
                 "OOP", "Medium", 4, 1, "MCQ",
-                "opt-4",
+                "q-103-opt-4",
                 "Dependency Inversion Principle states that high-level and low-level modules should depend on abstractions.",
                 List.of(
-                        option("opt-1", "Single Responsibility Principle"),
-                        option("opt-2", "Open/Closed Principle"),
-                        option("opt-3", "Interface Segregation Principle"),
-                        option("opt-4", "Dependency Inversion Principle")
+                        option("q-103", "1", "Single Responsibility Principle"),
+                        option("q-103", "2", "Open/Closed Principle"),
+                        option("q-103", "3", "Interface Segregation Principle"),
+                        option("q-103", "4", "Dependency Inversion Principle")
                 )
         );
 
@@ -93,13 +93,13 @@ public class DataInitializer implements CommandLineRunner {
                 "START TRANSACTION;\n" +
                 "SELECT * FROM accounts WHERE account_id = 42 FOR UPDATE;",
                 "DBMS", "Hard", 4, 1, "MCQ",
-                "opt-2",
+                "q-104-opt-2",
                 "FOR UPDATE sets an exclusive lock on the rows read until the transaction commits or rolls back.",
                 List.of(
-                        option("opt-1", "Shared Read Lock"),
-                        option("opt-2", "Exclusive Next-Key / Record Lock"),
-                        option("opt-3", "Table Metadata Lock"),
-                        option("opt-4", "Intent Shared Lock")
+                        option("q-104", "1", "Shared Read Lock"),
+                        option("q-104", "2", "Exclusive Next-Key / Record Lock"),
+                        option("q-104", "3", "Table Metadata Lock"),
+                        option("q-104", "4", "Intent Shared Lock")
                 )
         );
 
@@ -108,13 +108,13 @@ public class DataInitializer implements CommandLineRunner {
                 "What is the worst-case time complexity of searching for a key in a Balanced Red-Black Binary Search Tree with N nodes?",
                 null,
                 "Data Structures", "Medium", 4, 1, "MCQ",
-                "opt-2",
+                "q-105-opt-2",
                 "A Red-Black tree guarantees logarithmic height, so search takes O(log N) time.",
                 List.of(
-                        option("opt-1", "O(1)"),
-                        option("opt-2", "O(log N)"),
-                        option("opt-3", "O(N)"),
-                        option("opt-4", "O(N log N)")
+                        option("q-105", "1", "O(1)"),
+                        option("q-105", "2", "O(log N)"),
+                        option("q-105", "3", "O(N)"),
+                        option("q-105", "4", "O(N log N)")
                 )
         );
 
@@ -123,13 +123,13 @@ public class DataInitializer implements CommandLineRunner {
                 "A train running at 72 km/h crosses a 260m long platform in 23 seconds. What is the length of the train?",
                 null,
                 "Aptitude", "Medium", 4, 1, "MCQ",
-                "opt-1",
+                "q-106-opt-1",
                 "72 km/h = 20 m/s. Total distance = 20 × 23 = 460m. Train length = 460 - 260 = 200m.",
                 List.of(
-                        option("opt-1", "200 meters"),
-                        option("opt-2", "220 meters"),
-                        option("opt-3", "240 meters"),
-                        option("opt-4", "180 meters")
+                        option("q-106", "1", "200 meters"),
+                        option("q-106", "2", "220 meters"),
+                        option("q-106", "3", "240 meters"),
+                        option("q-106", "4", "180 meters")
                 )
         );
 
@@ -221,9 +221,9 @@ public class DataInitializer implements CommandLineRunner {
         return q;
     }
 
-    private Option option(String id, String text) {
+    private Option option(String questionId, String suffix, String text) {
         Option option = new Option();
-        option.setId(id);
+        option.setId(questionId + "-opt-" + suffix);
         option.setText(text);
         return option;
     }

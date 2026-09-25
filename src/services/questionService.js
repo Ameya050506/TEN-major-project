@@ -3,6 +3,19 @@ import { setDataSourceMode } from "./dataSource";
 
 const API_URL = "/api/questions";
 
+const mergeQuestionOptionsFromLocal = (question) => {
+  if (question?.options?.length) return question;
+  const local = getCollection(STORAGE_KEYS.QUESTIONS).find((q) => q.id === question?.id);
+  if (!local?.options?.length) return question;
+  return {
+    ...question,
+    options: local.options,
+    correctOptionId: question.correctOptionId || local.correctOptionId,
+  };
+};
+
+const normalizeQuestions = (questions) => questions.map(mergeQuestionOptionsFromLocal);
+
 const apiFetch = async (url, options = {}) => {
   const response = await fetch(url, options);
   if (!response.ok) {
@@ -19,7 +32,7 @@ export const questionService = {
     try {
       const data = await apiFetch(API_URL);
       setDataSourceMode("api");
-      return data;
+      return normalizeQuestions(data);
     } catch {
       setDataSourceMode("local");
       return getCollection(STORAGE_KEYS.QUESTIONS);
@@ -31,7 +44,7 @@ export const questionService = {
     try {
       const data = await apiFetch(`${API_URL}?ids=${ids.join(",")}`);
       setDataSourceMode("api");
-      return data;
+      return normalizeQuestions(data);
     } catch {
       setDataSourceMode("local");
       const all = getCollection(STORAGE_KEYS.QUESTIONS);

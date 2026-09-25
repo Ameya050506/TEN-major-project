@@ -73,6 +73,15 @@ export const AdminDashboard = () => {
       }
     };
     fetchAdminOverview();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") fetchAdminOverview();
+    };
+    window.addEventListener("focus", onVisible);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("focus", onVisible);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   if (loading) return <LoadingState message="Loading administrative overview..." />;

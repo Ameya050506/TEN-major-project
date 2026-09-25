@@ -3,6 +3,46 @@ import { setDataSourceMode } from "./dataSource";
 import { normalizeResult } from "./apiNormalize";
 
 const API_URL = "/api/results";
+const CANDIDATES_API = "/api/candidates";
+
+const mergeResultsById = (apiResults, localResults) => {
+  const byId = new Map();
+  apiResults.forEach((r) => byId.set(r.id, r));
+  localResults.forEach((r) => {
+    if (!byId.has(r.id)) byId.set(r.id, r);
+  });
+  return Array.from(byId.values());
+};
+
+const ensureCandidateOnApi = async (candidate) => {
+  if (!candidate?.id || !candidate?.email) return;
+  const payload = {
+    id: candidate.id,
+    fullName: candidate.fullName,
+    email: candidate.email,
+    role: candidate.role || "candidate",
+    organization: candidate.organization || "",
+    designation: candidate.designation || "",
+    phone: candidate.phone || "",
+    status: candidate.status || "Active",
+    testsCompleted: candidate.testsCompleted ?? 0,
+    avgScore: candidate.avgScore ?? 0,
+    registeredAt: candidate.registeredAt || new Date().toISOString().split("T")[0],
+  };
+  try {
+    await apiFetch(`${CANDIDATES_API}/${candidate.id}`);
+  } catch {
+    try {
+      await apiFetch(CANDIDATES_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      // Submit may still fall back to local scoring.
+    }
+  }
+};
 
 const apiFetch = async (url, options = {}) => {
   const response = await fetch(url, options);
@@ -93,13 +133,14 @@ const scoreAssessmentLocally = ({ candidate, test, answers, timeTakenSeconds }) 
 
 export const resultService = {
   getAllResults: async () => {
+    const localResults = getCollection(STORAGE_KEYS.RESULTS).map(normalizeResult);
     try {
       const data = await apiFetch(API_URL);
       setDataSourceMode("api");
-      return data.map(normalizeResult);
+      return mergeResultsById(data.map(normalizeResult), localResults);
     } catch {
       setDataSourceMode("local");
-      return getCollection(STORAGE_KEYS.RESULTS).map(normalizeResult);
+      return localResults;
     }
   },
 
@@ -117,28 +158,30 @@ export const resultService = {
   },
 
   getResultsByCandidateId: async (candidateId) => {
+    const localResults = getCollection(STORAGE_KEYS.RESULTS)
+      .filter((r) => r.candidateId === candidateId)
+      .map(normalizeResult);
     try {
       const data = await apiFetch(`${API_URL}/candidate/${candidateId}`);
       setDataSourceMode("api");
-      return data.map(normalizeResult);
+      return mergeResultsById(data.map(normalizeResult), localResults);
     } catch {
       setDataSourceMode("local");
-      return getCollection(STORAGE_KEYS.RESULTS)
-        .filter((r) => r.candidateId === candidateId)
-        .map(normalizeResult);
+      return localResults;
     }
   },
 
   getResultsByTestId: async (testId) => {
+    const localResults = getCollection(STORAGE_KEYS.RESULTS)
+      .filter((r) => r.testId === testId)
+      .map(normalizeResult);
     try {
       const data = await apiFetch(`${API_URL}/test/${testId}`);
       setDataSourceMode("api");
-      return data.map(normalizeResult);
+      return mergeResultsById(data.map(normalizeResult), localResults);
     } catch {
       setDataSourceMode("local");
-      return getCollection(STORAGE_KEYS.RESULTS)
-        .filter((r) => r.testId === testId)
-        .map(normalizeResult);
+      return localResults;
     }
   },
 
@@ -149,6 +192,7 @@ export const resultService = {
     }));
 
     try {
+      await ensureCandidateOnApi(candidate);
       const data = await apiFetch(`${API_URL}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -160,7 +204,11 @@ export const resultService = {
         }),
       });
       setDataSourceMode("api");
-      return normalizeResult(data);
+      const normalized = normalizeResult(data);
+      const results = getCollection(STORAGE_KEYS.RESULTS);
+      results.unshift(normalized);
+      saveCollection(STORAGE_KEYS.RESULTS, results);
+      return normalized;
     } catch {
       setDataSourceMode("local");
       return scoreAssessmentLocally({ candidate, test, answers, timeTakenSeconds });
